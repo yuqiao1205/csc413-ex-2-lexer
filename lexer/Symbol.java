@@ -16,7 +16,7 @@ public class Symbol {
   }
 
   // symbols contains all strings in the source program
-  private static java.util.HashMap<String,Symbol> symbols = new java.util.HashMap<String,Symbol>();
+  private static java.util.Map<String,Symbol> symbols = new java.util.HashMap<String,Symbol>();
 
   public String toString() {
     return name;

@@ -10,16 +10,18 @@ package lexer;
 public class Token {
   private int leftPosition,rightPosition;
   private Symbol symbol;
-  private int lineNo;
+  private int lineNumber;
+
 
   /**
    *  Create a new Token based on the given Symbol
    *  @param leftPosition is the source file column where the Token begins
    *  @param rightPosition is the source file column where the Token ends
    */
-  public Token( int leftPosition, int rightPosition, Symbol symbol ) {
+  public Token( int leftPosition, int rightPosition, int lineNumber,Symbol symbol ) {
     this.leftPosition = leftPosition;
     this.rightPosition = rightPosition;
+    this.lineNumber = lineNumber;
     this.symbol = symbol;
   }
 
@@ -47,6 +49,10 @@ public class Token {
 
   public int getRightPosition() {
     return rightPosition;
+  }
+
+  public int getLineNumber() {
+    return lineNumber;
   }
 
   /**

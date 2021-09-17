@@ -14,6 +14,7 @@ public class Lexer {
   // next character to process
   private char ch;
   private SourceReader source;
+  private int lineNumber;
 
   // positions in line of current token
   private int startPosition, endPosition;
@@ -37,14 +38,32 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the token ends
    *  @return the Token; either an id or one for the reserved words
    */
-  public Token newIdToken( String id, int startPosition, int endPosition ) {
+  public Token newIdToken( String id, int startPosition, int endPosition, int lineNumber) {
     return new Token(
       startPosition,
       endPosition,
-      Symbol.symbol( id, Tokens.Identifier )
-    );
+      lineNumber, Symbol.symbol( id, Tokens.Identifier ));
   }
 
+  /**
+   *  integer tokens are inserted in the symbol table; we don't convert the
+   *  integer strings to integers until we load the bytecodes for interpreting;
+   *  this ensures that any machine numeric dependencies are deferred
+   *  until we actually run the program; i.e. the numeric constraints of the
+   *  hardware used to compile the source program are not used
+   *  @param number is the int String just scanned
+   *  @param startPosition is the column in the source file where the int begins
+   *  @param endPosition is the column in the source file where the int ends
+   *  @return the int Token
+   */
+  public Token newIntegerToken( String number, int startPosition, int endPosition, int lineNumber) {
+    return new Token(
+            startPosition,
+            endPosition,
+            lineNumber,
+            Symbol.symbol( number, Tokens.INTeger )
+    );
+  }
   /**
    *  number tokens are inserted in the symbol table; we don't convert the
    *  numeric strings to numbers until we load the bytecodes for interpreting;
@@ -56,13 +75,25 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the int ends
    *  @return the int Token
    */
-  public Token newNumberToken( String number, int startPosition, int endPosition) {
+  public Token newNumberToken( String number, int startPosition, int endPosition, int lineNumber) {
     return new Token(
       startPosition,
       endPosition,
-      Symbol.symbol( number, Tokens.INTeger )
+      lineNumber,
+      Symbol.symbol( number, Tokens.NumberLit )
     );
   }
+
+  public Token newDateToken( String date, int startPosition, int endPosition, int lineNumber) {
+    return new Token(
+            startPosition,
+            endPosition,
+            lineNumber,
+            Symbol.symbol( date, Tokens.DateLit )
+    );
+  }
+
+
 
   /**
    *  build the token for operators (+ -) or separators (parens, braces)
@@ -97,7 +128,7 @@ public class Lexer {
       return nextToken();
     }
 
-    return new Token( startPosition, endPosition, symbol );
+    return new Token( startPosition, endPosition, lineNumber,symbol );
   }
 
   /**
@@ -126,6 +157,8 @@ public class Lexer {
 
     startPosition = source.getPosition();
     endPosition = startPosition - 1;
+    lineNumber = source.getLineno();
+
 
     if( Character.isJavaIdentifierStart( ch )) {
       // return tokens for ids and reserved words
@@ -141,7 +174,7 @@ public class Lexer {
         atEOF = true;
       }
 
-      return newIdToken( id, startPosition, endPosition );
+      return newIdToken( id, startPosition, endPosition, lineNumber );
     }
 
     if( Character.isDigit( ch )) {
@@ -158,7 +191,7 @@ public class Lexer {
         atEOF = true;
       }
 
-      return newNumberToken( number, startPosition, endPosition );
+      return newIntegerToken( number, startPosition, endPosition,lineNumber );
     }
 
     // At this point the only tokens to check for are one or two
@@ -199,9 +232,10 @@ public class Lexer {
     return number.matches("\\d+\\.\\d+");
   }
 
-//  private boolean isDateLit(String date) {
-//    return date.matches((\\d\\d)(\\d\\d)?");
-//  }
+  private boolean isDateLit(String date) {
+    return date.matches("(\\d\\d?)[/-](\\d\\d?)[/-](\\d\\d?)")||
+            date.matches("(\\d\\d?)[/-](\\d\\d?)[/-](\\d\\d\\d\\d)");
+  }
 
   public static void main(String args[]) {
 
@@ -213,22 +247,25 @@ public class Lexer {
     Token token;
 
     try {
-      Lexer lex = new Lexer( args[0] );
+      Lexer lex = new Lexer(args[0]);
 
-      while( true ) {
+      while (true) {
         token = lex.nextToken();
 
-        String p = "L: " + token.getLeftPosition() +
-          " R: " + token.getRightPosition() + "  " +
-          TokenType.tokens.get(token.getKind()) + " ";
-
-        if ((token.getKind() == Tokens.Identifier) || (token.getKind() == Tokens.INTeger)) {
-          p += token.toString();
+        if (token == null) {
+          return;
         }
 
-        System.out.println( p + ": " + lex.source.getLineno() );
+        String p = token + " Left: " + token.getLeftPosition() +
+                " Right: " + token.getRightPosition() +
+                "  line: " + token.getLineNumber() + " " +
+                token.getKind() + " ";
+
+        System.out.println(p);
       }
-    } catch (Exception e) {}
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
 }
