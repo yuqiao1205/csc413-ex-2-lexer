@@ -195,6 +195,13 @@ public class Lexer {
     return makeToken( op, startPosition, endPosition );
   }
 
+  private boolean isNumberLit(String number) {
+    return number.matches("\\d+\\.\\d+");
+  }
+
+//  private boolean isDateLit(String date) {
+//    return date.matches((\\d\\d)(\\d\\d)?");
+//  }
 /*
   public static void main(String args[]) {
     Token token;

@@ -10,6 +10,7 @@ package lexer;
 public class Token {
   private int leftPosition,rightPosition;
   private Symbol symbol;
+  private int lineNo;
 
   /**
    *  Create a new Token based on the given Symbol
