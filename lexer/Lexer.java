@@ -202,12 +202,12 @@ public class Lexer {
 //  private boolean isDateLit(String date) {
 //    return date.matches((\\d\\d)(\\d\\d)?");
 //  }
-/*
+
   public static void main(String args[]) {
     Token token;
 
     try {
-      Lexer lex = new Lexer( "simple.x" );
+      Lexer lex = new Lexer( args[0] );
 
       while( true ) {
         token = lex.nextToken();
@@ -224,5 +224,5 @@ public class Lexer {
       }
     } catch (Exception e) {}
   }
-*/
+
 }
