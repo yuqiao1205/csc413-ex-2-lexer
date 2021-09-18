@@ -1,5 +1,9 @@
 package lexer;
 
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.LineNumberReader;
+
 /**
  *  The Lexer class is responsible for scanning the source file
  *  which is a stream of characters and returning a stream of
@@ -254,7 +258,7 @@ public class Lexer {
         token = lex.nextToken();
 
         if (token == null) {
-          return;
+          break;
         }
 
 //        String p = token + " Left: " + token.getLeftPosition() +
@@ -267,6 +271,20 @@ public class Lexer {
     } catch (Exception e) {
       e.printStackTrace();
     }
+
+    String filePath = (args[0]);
+
+    try (LineNumberReader lineReader = new LineNumberReader(new FileReader(filePath))){
+      String lineText = null;
+
+      while ((lineText = lineReader.readLine()) != null) {
+        System.out.printf( "%3d: %s%n",lineReader.getLineNumber(), lineText);
+      }
+    } catch (IOException ex) {
+      System.err.println(ex);
+    }
+
+
   }
 
 }
