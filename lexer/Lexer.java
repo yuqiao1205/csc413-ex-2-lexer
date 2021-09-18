@@ -120,6 +120,7 @@ public class Lexer {
     }
 
     // ensure it's a valid token
+    // Why not just set to null as we have already found illegal token
     Symbol symbol = Symbol.symbol( tokenString, Tokens.BogusToken );
 
     if( symbol == null ) {
@@ -256,12 +257,12 @@ public class Lexer {
           return;
         }
 
-        String p = token + " Left: " + token.getLeftPosition() +
-                " Right: " + token.getRightPosition() +
-                "  line: " + token.getLineNumber() + " " +
-                token.getKind() + " ";
+//        String p = token + " Left: " + token.getLeftPosition() +
+//                " Right: " + token.getRightPosition() +
+//                "  line: " + token.getLineNumber() + " " +
+//                token.getKind() + " ";
 
-        System.out.println(p);
+        System.out.printf("%-11s left: %-8d right: %-8d line: %-8d %s%n",token,token.getLeftPosition(),token.getRightPosition(),token.getLineNumber(),token.getKind());
       }
     } catch (Exception e) {
       e.printStackTrace();

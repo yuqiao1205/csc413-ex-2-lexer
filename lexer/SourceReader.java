@@ -23,8 +23,8 @@ public class SourceReader {
    *  @exception IOException is thrown if there is an I/O problem
    */
   public SourceReader( String sourceFile ) throws IOException {
-    System.out.println( "Source file: " + sourceFile );
-    System.out.println( "user.dir: " + System.getProperty( "user.dir" ));
+   // System.out.println( "Source file: " + sourceFile );
+//    System.out.println( "user.dir: " + System.getProperty( "user.dir" ));
     source = new BufferedReader( new FileReader( sourceFile ));
   }
 
