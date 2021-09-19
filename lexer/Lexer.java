@@ -60,14 +60,14 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the int ends
    *  @return the int Token
    */
-  public Token newIntegerToken( String number, int startPosition, int endPosition, int lineNumber) {
-    return new Token(
-            startPosition,
-            endPosition,
-            lineNumber,
-            Symbol.symbol( number, Tokens.INTeger )
-    );
-  }
+//  public Token newIntegerToken( String number, int startPosition, int endPosition, int lineNumber) {
+//    return new Token(
+//            startPosition,
+//            endPosition,
+//            lineNumber,
+//            Symbol.symbol( number, Tokens.INTeger )
+//    );
+//  }
   /**
    *  number tokens are inserted in the symbol table; we don't convert the
    *  numeric strings to numbers until we load the bytecodes for interpreting;
@@ -79,23 +79,23 @@ public class Lexer {
    *  @param endPosition is the column in the source file where the int ends
    *  @return the int Token
    */
-  public Token newNumberToken( String number, int startPosition, int endPosition, int lineNumber) {
+  public Token newToken(String number, int startPosition, int endPosition, int lineNumber, Tokens kind) {
     return new Token(
       startPosition,
       endPosition,
       lineNumber,
-      Symbol.symbol( number, Tokens.NumberLit )
+      Symbol.symbol(number, kind)
     );
   }
 
-  public Token newDateToken( String date, int startPosition, int endPosition, int lineNumber) {
-    return new Token(
-            startPosition,
-            endPosition,
-            lineNumber,
-            Symbol.symbol( date, Tokens.DateLit )
-    );
-  }
+//  public Token newDateToken( String date, int startPosition, int endPosition, int lineNumber) {
+//    return new Token(
+//            startPosition,
+//            endPosition,
+//            lineNumber,
+//            Symbol.symbol( date, Tokens.DateLit )
+//    );
+//  }
 
 
 
@@ -185,18 +185,36 @@ public class Lexer {
     if( Character.isDigit( ch )) {
       // return number tokens
       String number = "";
+      Tokens token = Tokens.INTeger;
 
       try {
-        do {
-          endPosition++;
-          number += ch;
-          ch = source.read();
-        } while( Character.isDigit( ch ));
-      } catch( Exception e ) {
+        number += readNumber();
+      } catch (Exception e) {
         atEOF = true;
       }
 
-      return newIntegerToken( number, startPosition, endPosition,lineNumber );
+      try {
+        if('.' == ch || '/' == ch || '-' == ch) {
+          endPosition++;
+          number += ch;
+          ch = source.read();
+          number += readNumber();
+
+          if(isNumberLit(number)) {
+            token = Tokens.NumberLit;
+          } else if ('/' == ch || '-' == ch) {
+            number += ch;
+            ch = source.read();
+            number += readNumber();
+            if (isDateLit(number)){
+              token = Tokens.DateLit;
+            }
+          }
+        }
+      } catch(Exception e) {
+        atEOF = true;
+      }
+      return newToken( number, startPosition, endPosition, lineNumber, token );
     }
 
     // At this point the only tokens to check for are one or two
@@ -233,6 +251,16 @@ public class Lexer {
     return makeToken( op, startPosition, endPosition );
   }
 
+  private String readNumber() throws Exception {
+    String number="";
+    do {
+      endPosition++;
+      number += ch;
+      ch = source.read();
+    } while (Character.isDigit(ch));
+    return number;
+  }
+
   private boolean isNumberLit(String number) {
     return number.matches("\\d+\\.\\d+");
   }
@@ -260,11 +288,6 @@ public class Lexer {
         if (token == null) {
           break;
         }
-
-//        String p = token + " Left: " + token.getLeftPosition() +
-//                " Right: " + token.getRightPosition() +
-//                "  line: " + token.getLineNumber() + " " +
-//                token.getKind() + " ";
 
         System.out.printf("%-11s left: %-8d right: %-8d line: %-8d %s%n",token,token.getLeftPosition(),token.getRightPosition(),token.getLineNumber(),token.getKind());
       }
