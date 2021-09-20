@@ -12,7 +12,6 @@ public class Token {
   private Symbol symbol;
   private int lineNumber;
 
-
   /**
    *  Create a new Token based on the given Symbol
    *  @param leftPosition is the source file column where the Token begins

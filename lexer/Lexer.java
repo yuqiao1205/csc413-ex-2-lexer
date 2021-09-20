@@ -50,35 +50,19 @@ public class Lexer {
   }
 
   /**
-   *  integer tokens are inserted in the symbol table; we don't convert the
-   *  integer strings to integers until we load the bytecodes for interpreting;
-   *  this ensures that any machine numeric dependencies are deferred
-   *  until we actually run the program; i.e. the numeric constraints of the
-   *  hardware used to compile the source program are not used
-   *  @param number is the int String just scanned
-   *  @param startPosition is the column in the source file where the int begins
-   *  @param endPosition is the column in the source file where the int ends
-   *  @return the int Token
-   */
-//  public Token newIntegerToken( String number, int startPosition, int endPosition, int lineNumber) {
-//    return new Token(
-//            startPosition,
-//            endPosition,
-//            lineNumber,
-//            Symbol.symbol( number, Tokens.INTeger )
-//    );
-//  }
-  /**
-   *  number tokens are inserted in the symbol table; we don't convert the
-   *  numeric strings to numbers until we load the bytecodes for interpreting;
-   *  this ensures that any machine numeric dependencies are deferred
-   *  until we actually run the program; i.e. the numeric constraints of the
-   *  hardware used to compile the source program are not used
-   *  @param number is the int String just scanned
-   *  @param startPosition is the column in the source file where the int begins
-   *  @param endPosition is the column in the source file where the int ends
-   *  @return the int Token
-   */
+   *   Number are inserted in the symbol table; we don't convert the
+   *   numeric strings to numbers until we load the bytecodes for interpreting;
+   *   this ensures that any machine numeric dependencies are deferred
+   *   until we actually run the program; i.e. the numeric constraints of the
+   *   hardware used to compile the source program are not used
+   *   @param number is the int String just scanned
+   *   @param  startPosition is the column in the source file where the token begins
+   *   @param  endPosition is the column in the source file where the token ends
+   *   @param lineNumber is the line number in the source file where the token is at
+   *   @param kind token kind
+   *   @return created token
+ */
+
   public Token newToken(String number, int startPosition, int endPosition, int lineNumber, Tokens kind) {
     return new Token(
       startPosition,
@@ -87,17 +71,6 @@ public class Lexer {
       Symbol.symbol(number, kind)
     );
   }
-
-//  public Token newDateToken( String date, int startPosition, int endPosition, int lineNumber) {
-//    return new Token(
-//            startPosition,
-//            endPosition,
-//            lineNumber,
-//            Symbol.symbol( date, Tokens.DateLit )
-//    );
-//  }
-
-
 
   /**
    *  build the token for operators (+ -) or separators (parens, braces)
@@ -146,7 +119,6 @@ public class Lexer {
         source.close();
         source = null;
       }
-
       return null;
     }
 
@@ -164,57 +136,12 @@ public class Lexer {
     endPosition = startPosition - 1;
     lineNumber = source.getLineno();
 
-
     if( Character.isJavaIdentifierStart( ch )) {
-      // return tokens for ids and reserved words
-      String id = "";
-
-      try {
-        do {
-          endPosition++;
-          id += ch;
-          ch = source.read();
-        } while( Character.isJavaIdentifierPart( ch ));
-      } catch( Exception e ) {
-        atEOF = true;
-      }
-
-      return newIdToken( id, startPosition, endPosition, lineNumber );
+      return getIdToken();
     }
 
     if( Character.isDigit( ch )) {
-      // return number tokens
-      String number = "";
-      Tokens token = Tokens.INTeger;
-
-      try {
-        number += readNumber();
-      } catch (Exception e) {
-        atEOF = true;
-      }
-
-      try {
-        if('.' == ch || '/' == ch || '-' == ch) {
-          endPosition++;
-          number += ch;
-          ch = source.read();
-          number += readNumber();
-
-          if(isNumberLit(number)) {
-            token = Tokens.NumberLit;
-          } else if ('/' == ch || '-' == ch) {
-            number += ch;
-            ch = source.read();
-            number += readNumber();
-            if (isDateLit(number)){
-              token = Tokens.DateLit;
-            }
-          }
-        }
-      } catch(Exception e) {
-        atEOF = true;
-      }
-      return newToken( number, startPosition, endPosition, lineNumber, token );
+      return getDigitToken();
     }
 
     // At this point the only tokens to check for are one or two
@@ -251,8 +178,81 @@ public class Lexer {
     return makeToken( op, startPosition, endPosition );
   }
 
-  private String readNumber() throws Exception {
-    String number="";
+  private Token getIdToken() {
+    // return tokens for ids and reserved words
+    String id = "";
+
+    try {
+      do {
+        endPosition++;
+        id += ch;
+        ch = source.read();
+      } while( Character.isJavaIdentifierPart( ch ));
+    } catch( Exception e ) {
+      atEOF = true;
+    }
+
+    return newIdToken( id, startPosition, endPosition, lineNumber );
+  }
+
+  /**
+   * Handle and return the Integer/Date/Number token.
+   *
+   * @return token of types found.
+   */
+  private Token getDigitToken() {
+
+    // Set default value to Integer
+    String token = "";
+    Tokens kind = Tokens.INTeger;
+
+    try {
+      token += readInteger();
+    } catch (Exception e) {
+      atEOF = true;
+    }
+
+    try {
+      // Handle the case of Number or Date
+      if ('.' == ch || '/' == ch || '-' == ch) {
+        endPosition++;
+        token += ch;
+
+        ch = source.read();
+        token += readInteger();
+
+        if (isNumberLit(token)) { // Number case
+          kind = Tokens.NumberLit;
+        } else if ('/' == ch || '-' == ch) {  // Date case
+          token += ch;
+
+          ch = source.read();
+          token += readInteger();
+
+          if (isDateLit(token)) {
+            kind = Tokens.DateLit;
+          } else {
+            System.out.println( "******** illegal character: " + token );
+            atEOF = true;
+          }
+        }
+      }
+    } catch (Exception e) {
+      atEOF = true;
+    }
+
+    return newToken( token, startPosition, endPosition, lineNumber, kind );
+  }
+
+  /**
+   * Read and the return the integer value.
+   * The criteria to call the method is the current character is digit.
+   *
+   * @return integer value.
+   * @throws IOException if failed to read the source.
+   */
+  private String readInteger() throws IOException {
+    String number = "";
     do {
       endPosition++;
       number += ch;
@@ -289,7 +289,7 @@ public class Lexer {
           break;
         }
 
-        System.out.printf("%-11s left: %-8d right: %-8d line: %-8d %s%n",token,token.getLeftPosition(),token.getRightPosition(),token.getLineNumber(),token.getKind());
+        System.out.printf("%-11s left: %-8d right: %-8d line: %-8d %s%n", token, token.getLeftPosition(), token.getRightPosition(), token.getLineNumber(), token.getKind());
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -303,10 +303,9 @@ public class Lexer {
       while ((lineText = lineReader.readLine()) != null) {
         System.out.printf( "%3d: %s%n",lineReader.getLineNumber(), lineText);
       }
-    } catch (IOException ex) {
-      System.err.println(ex);
+    } catch (IOException e) {
+      e.printStackTrace();
     }
-
 
   }
 
