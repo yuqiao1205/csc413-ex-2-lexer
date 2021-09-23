@@ -19,7 +19,7 @@ public class TokenSetup {
   // files used for new classes
   private PrintWriter table, symbols;
 
-  public static void main( String args[] ) {
+  public static void main(String[] args) {
       new TokenSetup().initTokenClasses();
   }
 
@@ -91,8 +91,8 @@ public class TokenSetup {
       String symType = "Tokens." + type;
 
       table.println(
-        "     tokens.put(" + symType  + ", Symbol.symbol(\"" +
-        value + "\"," + symType + "));"
+              "     tokens.put(" + symType  + ", Symbol.symbol(\"" +
+                      value + "\"," + symType + "));"
       );
 
       if( tokenCount % 5 == 0 ) {

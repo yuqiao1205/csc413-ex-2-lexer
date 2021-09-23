@@ -38,11 +38,9 @@ public class Lexer {
    *  newIdTokens are either ids or reserved words; new id's will be inserted
    *  in the symbol table with an indication that they are id's
    *  @param id is the String just scanned - it's either an id or reserved word
-   *  @param startPosition is the column in the source file where the token begins
-   *  @param endPosition is the column in the source file where the token ends
    *  @return the Token; either an id or one for the reserved words
    */
-  public Token newIdToken( String id, int startPosition, int endPosition, int lineNumber) {
+  public Token newIdToken( String id ) {
     return new Token(
       startPosition,
       endPosition,
@@ -56,14 +54,11 @@ public class Lexer {
    *   until we actually run the program; i.e. the numeric constraints of the
    *   hardware used to compile the source program are not used
    *   @param number is the int String just scanned
-   *   @param  startPosition is the column in the source file where the token begins
-   *   @param  endPosition is the column in the source file where the token ends
-   *   @param lineNumber is the line number in the source file where the token is at
    *   @param kind token kind
    *   @return created token
  */
 
-  public Token newToken(String number, int startPosition, int endPosition, int lineNumber, Tokens kind) {
+  public Token newNumberToken(String number, Tokens kind) {
     return new Token(
       startPosition,
       endPosition,
@@ -76,11 +71,9 @@ public class Lexer {
    *  build the token for operators (+ -) or separators (parens, braces)
    *  filter out comments which begin with two slashes
    *  @param tokenString is the String representing the token
-   *  @param startPosition is the column in the source file where the token begins
-   *  @param endPosition is the column in the source file where the token ends
    *  @return the Token just found
    */
-  public Token makeToken( String tokenString, int startPosition, int endPosition ) {
+  public Token makeToken( String tokenString) {
     // filter comments
     if( tokenString.equals("//") ) {
       try {
@@ -148,34 +141,34 @@ public class Lexer {
     // characters; we must also check for comments that begin with
     // 2 slashes
     String charOld = "" + ch;
-    String op = charOld;
+    String operator = charOld;
     Symbol sym;
     try {
       endPosition++;
       ch = source.read();
-      op += ch;
+      operator += ch;
 
       // check if valid 2 char operator; if it's not in the symbol
       // table then don't insert it since we really have a one char
       // token
-      sym = Symbol.symbol( op, Tokens.BogusToken );
+      sym = Symbol.symbol( operator, Tokens.BogusToken );
       if (sym == null) {
         // it must be a one char token
-        return makeToken( charOld, startPosition, endPosition );
+        return makeToken( charOld );
       }
 
       endPosition++;
       ch = source.read();
 
-      return makeToken( op, startPosition, endPosition );
+      return makeToken( operator );
     } catch( Exception e ) { /* no-op */ }
 
     atEOF = true;
     if( startPosition == endPosition ) {
-      op = charOld;
+      operator = charOld;
     }
 
-    return makeToken( op, startPosition, endPosition );
+    return makeToken( operator );
   }
 
   private Token getIdToken() {
@@ -192,7 +185,7 @@ public class Lexer {
       atEOF = true;
     }
 
-    return newIdToken( id, startPosition, endPosition, lineNumber );
+    return newIdToken( id );
   }
 
   /**
@@ -201,7 +194,6 @@ public class Lexer {
    * @return token of types found.
    */
   private Token getDigitToken() {
-
     // Set default value to Integer
     String token = "";
     Tokens kind = Tokens.INTeger;
@@ -214,16 +206,15 @@ public class Lexer {
 
     try {
       // Handle the case of Number or Date
-      if ('.' == ch || '/' == ch || '-' == ch) {
+      if ('.' == ch || '~' == ch) {
         endPosition++;
         token += ch;
-
         ch = source.read();
         token += readInteger();
 
         if (isNumberLit(token)) { // Number case
           kind = Tokens.NumberLit;
-        } else if ('/' == ch || '-' == ch) {  // Date case
+        } else if ('~' == ch) {  // Date case
           token += ch;
 
           ch = source.read();
@@ -232,8 +223,8 @@ public class Lexer {
           if (isDateLit(token)) {
             kind = Tokens.DateLit;
           } else {
-            System.out.println( "******** illegal character: " + token );
-            atEOF = true;
+            System.out.println( "***** illegal character *****:  " + token + "  line: "+ lineNumber );
+            return nextToken();
           }
         }
       }
@@ -241,7 +232,7 @@ public class Lexer {
       atEOF = true;
     }
 
-    return newToken( token, startPosition, endPosition, lineNumber, kind );
+    return newNumberToken( token, kind );
   }
 
   /**
@@ -266,11 +257,11 @@ public class Lexer {
   }
 
   private boolean isDateLit(String date) {
-    return date.matches("(\\d\\d?)[/-](\\d\\d?)[/-](\\d\\d?)")||
-            date.matches("(\\d\\d?)[/-](\\d\\d?)[/-](\\d\\d\\d\\d)");
+    return date.matches("(\\d\\d?)~(\\d\\d?)~(\\d\\d?)")||
+            date.matches("(\\d\\d?)~(\\d\\d?)~(\\d\\d\\d\\d)");
   }
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
 
     if (args.length == 0){
       System.out.println("usage: java lexer.Lexer filename.x");
@@ -289,7 +280,8 @@ public class Lexer {
           break;
         }
 
-        System.out.printf("%-11s left: %-8d right: %-8d line: %-8d %s%n", token, token.getLeftPosition(), token.getRightPosition(), token.getLineNumber(), token.getKind());
+        System.out.printf("%-11s left: %-8d right: %-8d line: %-8d %s%n",
+                token, token.getLeftPosition(), token.getRightPosition(), token.getLineNumber(), token.getKind());
       }
     } catch (Exception e) {
       e.printStackTrace();
