@@ -25,6 +25,7 @@ public class Lexer {
 
   /**
    *  Lexer constructor
+   *
    * @param sourceFile is the name of the File to read the program source from
    */
   public Lexer( String sourceFile ) throws Exception {
@@ -37,6 +38,7 @@ public class Lexer {
   /**
    *  newIdTokens are either ids or reserved words; new id's will be inserted
    *  in the symbol table with an indication that they are id's
+   *
    *  @param id is the String just scanned - it's either an id or reserved word
    *  @return the Token; either an id or one for the reserved words
    */
@@ -53,6 +55,7 @@ public class Lexer {
    *   this ensures that any machine numeric dependencies are deferred
    *   until we actually run the program; i.e. the numeric constraints of the
    *   hardware used to compile the source program are not used
+   *
    *   @param number is the int String just scanned
    *   @param kind token kind
    *   @return created token
@@ -70,6 +73,7 @@ public class Lexer {
   /**
    *  build the token for operators (+ -) or separators (parens, braces)
    *  filter out comments which begin with two slashes
+   *
    *  @param tokenString is the String representing the token
    *  @return the Token just found
    */
@@ -290,7 +294,7 @@ public class Lexer {
     String filePath = (args[0]);
 
     try (LineNumberReader lineReader = new LineNumberReader(new FileReader(filePath))){
-      String lineText = null;
+      String lineText;
 
       while ((lineText = lineReader.readLine()) != null) {
         System.out.printf( "%3d: %s%n",lineReader.getLineNumber(), lineText);
