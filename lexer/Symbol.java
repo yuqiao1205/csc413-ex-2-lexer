@@ -16,7 +16,7 @@ public class Symbol {
   }
 
   // symbols contains all strings in the source program
-  private static java.util.HashMap<String,Symbol> symbols = new java.util.HashMap<String,Symbol>();
+  private static java.util.Map<String,Symbol> symbols = new java.util.HashMap<String,Symbol>();
 
   public String toString() {
     return name;
@@ -37,7 +37,6 @@ public class Symbol {
         // bogus string so don't enter into symbols
         return null;
       }
-      // System.out.println( "new symbol: " + u + " Kind: " + kind );
       s = new Symbol( newTokenString, kind );
       symbols.put( newTokenString, s );
     }
