@@ -98,7 +98,8 @@ public class Lexer {
     Symbol symbol = Symbol.symbol( tokenString, Tokens.BogusToken );
 
     if( symbol == null ) {
-      System.out.println( "******** illegal character: " + tokenString );
+      System.out.println( "******** illegal character: " +
+              tokenString + " left: " + startPosition + " right: " + endPosition + " line: "+ lineNumber );
       atEOF = true;
       return nextToken();
     }
@@ -227,9 +228,12 @@ public class Lexer {
           if (isDateLit(token)) {
             kind = Tokens.DateLit;
           } else {
-            System.out.println( "***** illegal character *****:  " + token + "  line: "+ lineNumber );
+            System.out.println( "******** illegal character:  " +
+                    token + " left: " + startPosition + " right: " + endPosition + " line: "+ lineNumber );
+            atEOF = true;
             return nextToken();
           }
+
         }
       }
     } catch (Exception e) {
