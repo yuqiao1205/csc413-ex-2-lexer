@@ -80,8 +80,17 @@ public class SourceReader {
   /**
    *  @return the line number of the character just read in
    */
-  public int getLineno() {
+  public int getLineNo() {
     return lineNumber;
+  }
+
+  /**
+   * Return the current line.
+   *
+   * @return the current line.
+   */
+  public String getLine() {
+    return nextLine;
   }
 
 }

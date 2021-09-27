@@ -81,11 +81,11 @@ public class Lexer {
     // filter comments
     if( tokenString.equals("//") ) {
       try {
-        int oldLine = source.getLineno();
+        int oldLine = source.getLineNo();
 
         do {
           ch = source.read();
-        } while( oldLine == source.getLineno() );
+        } while( oldLine == source.getLineNo() );
       } catch (Exception e) {
         atEOF = true;
       }
@@ -99,7 +99,7 @@ public class Lexer {
 
     if( symbol == null ) {
       System.out.println( "******** illegal character: " +
-              tokenString + " left: " + startPosition + " right: " + endPosition + " line: "+ lineNumber );
+              tokenString + " left: " + startPosition + " right: " + endPosition + " line: "+ lineNumber + " current error line:" + source.getLine());
       atEOF = true;
       return nextToken();
     }
@@ -132,7 +132,7 @@ public class Lexer {
 
     startPosition = source.getPosition();
     endPosition = startPosition - 1;
-    lineNumber = source.getLineno();
+    lineNumber = source.getLineNo();
 
     if( Character.isJavaIdentifierStart( ch )) {
       return getIdToken();
@@ -228,8 +228,8 @@ public class Lexer {
           if (isDateLit(token)) {
             kind = Tokens.DateLit;
           } else {
-            System.out.println( "******** illegal character:  " +
-                    token + " left: " + startPosition + " right: " + endPosition + " line: "+ lineNumber );
+            System.out.println( "******** illegal character:  " + token + " left: " + startPosition
+                    + " right: " + endPosition + " line: "+ lineNumber + " current error line:" + source.getLine() );
             atEOF = true;
             return nextToken();
           }
